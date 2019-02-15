@@ -1,0 +1,107 @@
+
+#mv Peri_18S_R2_001.fastq  Peri_18S_R2.fastq
+
+#mv Peri_18S_R1_001.fastq  Peri_18S_R1.fastq
+
+#mv Peri_18S_I1_001.fastq  Peri_18S_I1.fastq
+
+make.contigs(ffastq=Peri_18S_R1.fastq, rfastq=Peri_18S_R2.fastq, rindex=Peri_18S_I1.fastq, oligos=Peri_18S_oligos.txt)
+
+summary.seqs(fasta=Peri_18S_R1.trim.contigs.fasta)
+
+screen.seqs(fasta=Peri_18S_R1.trim.contigs.fasta, group=Peri_18S_R1.contigs.groups, maxambig=0, maxlength=275)
+
+unique.seqs(fasta=Peri_18S_R1.trim.contigs.good.fasta)
+
+count.seqs(name=Peri_18S_R1.trim.contigs.good.names, group=Peri_18S_R1.contigs.good.groups)
+
+summary.seqs(count=Peri_18S_R1.trim.contigs.good.count_table, processors=2)
+
+
+
+####make eukaryote alignment and taxonomy files
+
+
+#get.lineage(fasta=silva.nr_v123.align, taxonomy=silva.nr_v123.tax, taxon=Eukaryota)
+
+
+#filter.seqs(fasta=silva.nr_v123.pick.align)
+
+
+
+#####files are renamed using linux command
+
+#system(mv silva.nr_v123.pick.filter.fasta silva.nr_v123.euk.align)
+
+
+#system(mv silva.nr_v123.pick.tax silva.nr_v123.euk.tax)
+
+#summary.seqs(fasta=silva.nr_v123.euk.align)
+
+
+
+align.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.fasta, template=silva.nr_v123.euk.align, processors=2)
+
+summary.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.align, count=Peri_18S_R1.trim.contigs.good.count_table, processors=2)
+
+####the next screen.seqs command will implement start and end options that need to be specified before running. Take a look at the results from summary.seqs() and pick you start and end values. Example keep seqs that start at or before position 1968 and end at or after position 11550. 
+
+#quit()
+
+screen.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.align, count=Peri_18S_R1.trim.contigs.good.count_table, summary=Peri_18S_R1.trim.contigs.good.unique.summary, start=13990, end=14634, maxhomop=8)
+
+summary.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.align, count=Peri_18S_R1.trim.contigs.good.good.count_table)
+
+filter.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.align, vertical=T, trump=.)
+
+unique.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.fasta, count=Peri_18S_R1.trim.contigs.good.good.count_table)
+
+
+summary.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.count_table)
+
+
+
+#quit()
+
+
+pre.cluster(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.count_table, diffs=1)
+
+summary.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.count_table, processors=1)
+
+
+chimera.uchime(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)
+
+
+remove.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.fasta, accnos=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.accnos)
+
+summary.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, processors=2)
+
+
+
+classify.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, reference= silva.nr_v123.euk.align, taxonomy=silva.nr_v123.euk.tax, cutoff=80, processors=2)
+
+#This next command is optional. It is in place to remove undesirable sequences. It will remove sequence from groups specified in the taxon option. 
+
+remove.lineage(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.count_table, taxonomy=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.euk.wang.taxonomy, taxon=unknown-Archaea-Bacteria)
+
+#dist.seqs(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, cutoff=0.20)
+
+cluster.split(fasta=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table, taxonomy=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.euk.wang.pick.taxonomy, splitmethod=classify, taxlevel=4, cutoff=0.15)
+
+make.shared(list=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table, label=0.03)
+
+classify.otu(list=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.list, count=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.denovo.uchime.pick.pick.count_table, taxonomy=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.euk.wang.pick.taxonomy, label=0.03)
+
+count.groups(shared=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.shared)
+
+
+
+#quit()
+
+
+#After count groups you will find the smallest acceptable size per sample. Use that in the size argument. This will rarefy the data. 
+
+sub.sample(shared=Peri_18S_R1.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.an.unique_list.shared, size=7500)
+
+quit()
+
